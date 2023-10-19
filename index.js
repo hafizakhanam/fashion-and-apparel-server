@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
 
     const productCollection = client.db("productDB").collection("product");
+    const categoryCollection = client.db("productDB").collection("category");
 
     app.get('/product', async(req, res) =>{
       const cursor = productCollection.find();
@@ -38,6 +39,31 @@ async function run() {
       console.log(newProduct)
       const result = await productCollection.insertOne(newProduct);
       res.send(result);
+    })
+
+    app.get('/category', async(req, res) =>{
+      const cursor = categoryCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.post('/category', async(req, res) =>{
+      const newCategory = req.body;
+      console.log(newCategory)
+      const result = await categoryCollection.insertOne(newCategory);
+      res.send(result);
+    })
+
+
+    app.get('/category/:id', async(req, res) =>{
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const category = await categoryCollection.findOne({ _id: objectId });
+      const query = {brandName: category.categoryName}
+      const products = await productCollection.find(query);
+      const result = await products.toArray();
+      console.log(result)  
+      res.send(result); 
     })
 
 
