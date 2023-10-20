@@ -27,6 +27,7 @@ async function run() {
 
     const productCollection = client.db("productDB").collection("product");
     const categoryCollection = client.db("productDB").collection("category");
+    const userCollection = client.db("productDB").collection("user");
 
     app.get('/product', async(req, res) =>{
       const cursor = productCollection.find();
@@ -101,6 +102,13 @@ async function run() {
       res.send(result);
     });
 
+    // User API
+    app.post('/user', async(req, res) =>{
+      const newUser = req.body;
+      console.log(newUser)
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
