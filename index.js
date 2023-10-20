@@ -55,16 +55,51 @@ async function run() {
     })
 
 
-    app.get('/category/:id', async(req, res) =>{
+    app.get('/category/:id', async (req, res) => {
       const id = req.params.id;
       const objectId = new ObjectId(id);
       const category = await categoryCollection.findOne({ _id: objectId });
-      const query = {brandName: category.categoryName}
+      const query = { brandName: category.categoryName };
       const products = await productCollection.find(query);
       const result = await products.toArray();
-      console.log(result)  
-      res.send(result); 
-    })
+    
+      if (result.length === 0) {
+        // Send a 404 status response when no products are found
+        return res.status(404).send('No products found for this category.');
+      }
+    
+      // Products found, send the result
+      console.log(result);
+      res.send(result);
+    });
+
+    app.get('/product/:id', async (req, res) => {
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const product = await productCollection.findOne({ _id: objectId });
+      console.log(product);
+      res.send(product);
+    });
+
+    app.put('/product/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const options = { upsert: true};
+      const updatedProduct = req.body;
+      const product = {
+        $set: {
+          productImage: updatedProduct.productImage, 
+          productName: updatedProduct.productName, 
+          brandName: updatedProduct.brandName,  
+          productType: updatedProduct.productType, 
+          productPrice: updatedProduct.productPrice, 
+          shortDes: updatedProduct.shortDes, 
+          rating: updatedProduct.rating
+        }
+      };
+      const result = await productCollection.updateOne(query, product, options);
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
@@ -76,8 +111,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-
 
 
 app.get('/', (req, res) =>{
