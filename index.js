@@ -28,6 +28,7 @@ async function run() {
     const productCollection = client.db("productDB").collection("product");
     const categoryCollection = client.db("productDB").collection("category");
     const userCollection = client.db("productDB").collection("user");
+    const cartDataCollection = client.db("productDB").collection("cart");
 
     app.get('/product', async(req, res) =>{
       const cursor = productCollection.find();
@@ -109,6 +110,21 @@ async function run() {
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     })
+
+    app.post('/cart', async(req, res) =>{
+      const newItem = req.body;
+      console.log(newItem)
+      const result = await cartDataCollection.insertOne(newItem);
+      res.send(result);
+    })
+
+    app.get('/cart/:id', async (req, res) => {
+      const id = req.params.id;
+      const cart = await cartDataCollection.find({ "uID": id });
+      const result = await cart.toArray();
+      console.log(result);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
